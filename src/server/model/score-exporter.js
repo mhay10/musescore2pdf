@@ -32,7 +32,7 @@ class PdfScoreExporter extends ScoreExporter {
             data.forEach(image => {
                doc.addPage();
                if (score.vector) {
-                  SVGtoPDF(doc, data, 0, 0);
+                  SVGtoPDF(doc, image.toString(), 0, 0, {preserveAspectRatio: 'XminYMid meet'});
                }
                else {
                   doc.image(image, 0, 0, {fit: [doc.page.width, doc.page.height]});
