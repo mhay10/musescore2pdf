@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const SVGtoPDF = require('svg-to-pdfkit');
 const axios = require('axios');
+const fs = require('fs');
 
 class ScoreExporter {
    constructor() {
@@ -20,23 +21,32 @@ class PdfScoreExporter extends ScoreExporter {
    }
 
    export(score, writeable) {
-      let doc = new PDFDocument({
-         autoFirstPage: false
-      });
-      doc.pipe(writeable)
-      score.pageUrls().forEach(url => {
-         doc.addPage();
-         if (score.vector) {
-            // SVGtoPDF(doc, data, 0, 0)
-         }
-         else {
-            axios.get(url, {responseType: "arraybuffer"})
-               .then(response => {
-                  doc.image(response.data, 0, 0)
-               });
-         }
-      });
-      // doc.end();
+      this.getPageData(score)
+         .then(data => {
+            let doc = new PDFDocument({
+               size: 'letter',
+               layout: 'portrait',
+               autoFirstPage: false
+            });
+            doc.pipe(writeable);
+            data.forEach(image => {
+               doc.addPage();
+               if (score.vector) {
+                  SVGtoPDF(doc, data, 0, 0);
+               }
+               else {
+                  doc.image(image, 0, 0, {fit: [doc.page.width, doc.page.height]});
+               }
+            });
+            doc.end();
+         });
+   }
+
+   getPageData(score) {
+      return Promise.all(score.pageUrls().map(url =>
+         axios.get(url, {responseType: 'arraybuffer'})
+            .then(response => new Promise((res, rej) => res(response.data))))
+      );
    }
 }
 
