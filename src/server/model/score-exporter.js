@@ -21,6 +21,10 @@ class PdfScoreExporter extends ScoreExporter {
    }
 
    export(score, writeable) {
+      return new Promise((res, rej) => this._export(score, writeable, res));
+   }
+
+   _export(score, writeable, res) {
       this.getPageData(score)
          .then(data => {
             let doc = new PDFDocument({
@@ -39,6 +43,7 @@ class PdfScoreExporter extends ScoreExporter {
                }
             });
             doc.end();
+            res("complete");
          });
    }
 

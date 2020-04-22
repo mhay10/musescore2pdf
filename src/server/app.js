@@ -30,9 +30,8 @@ console.log(`Express started on port ${httpPort}`);
 
 axios.get('https://musescore.com/user/6648736/scores/5663457')
    .then(function (response) {
-      let parser = new ScoreParser('whatever');
-      let score = parser.parse(response.data);
-      console.log(score.pageUrls());
-      new PdfScoreExporter().export(score, fs.createWriteStream('/tmp/test.pdf'));
+      let score = new ScoreParser().parse(response.data);
+      new PdfScoreExporter().export(score, fs.createWriteStream('/tmp/test.pdf'))
+         .then(status => console.log(`done: ${status}`));
    })
 
