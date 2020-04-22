@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const routes = require('./routes');
 const ScoreParser = require('./model/score-parser');
 const PdfScoreExporter = require('./model/score-exporter').PdfScoreExporter;
-
+const fs = require('fs');
 const axios = require('axios');
 
 const logger = winston.createLogger({
@@ -33,6 +33,6 @@ axios.get('https://musescore.com/user/147969/scores/159038')
       let parser = new ScoreParser('whatever');
       let score = parser.parse(response.data);
       console.log(score.pageUrls());
-      new PdfScoreExporter().export(score);
+      new PdfScoreExporter().export(score, fs.createWriteStream('/tmp/test.pdf'));
    })
 

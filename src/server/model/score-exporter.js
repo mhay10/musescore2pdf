@@ -19,31 +19,28 @@ class PdfScoreExporter extends ScoreExporter {
       super();
    }
 
-   export(score) {
+   export(score, writeable) {
       let doc = new PDFDocument({
          autoFirstPage: false
       });
+      doc.pipe(writeable)
       score.pageUrls().forEach(url => {
-         this.downloadSvgData(url)
-            .then(svg => {
-               doc.addPage()
-               if (score.vector) {
-                  SVGtoPDF(doc, svg, 0, 0)
-               }
-            })
-      })
-   }
-
-   downloadSvgData(url) {
-      return new Promise((success, error) => {
-         return axios.get(url)
-            .then(response => success(processPage.response.data))
-            .catch(reason => error(reason));
+         doc.addPage();
+         if (score.vector) {
+            // SVGtoPDF(doc, data, 0, 0)
+         }
+         else {
+            axios.get(url, {responseType: "arraybuffer"})
+               .then(response => {
+                  doc.image(response.data, 0, 0)
+               });
+         }
       });
+      // doc.end();
    }
 }
 
 module.exports = {
-   ScoreExporter : ScoreExporter,
-   PdfScoreExporter : PdfScoreExporter
+   ScoreExporter: ScoreExporter,
+   PdfScoreExporter: PdfScoreExporter
 }
