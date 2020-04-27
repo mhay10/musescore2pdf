@@ -7,6 +7,13 @@ const PdfScoreExporter = require('./model/score-exporter').PdfScoreExporter;
 const fs = require('fs');
 const axios = require('axios');
 
+const httpPort = 3000;
+
+const app = express();
+app.use(helmet());
+app.use(express.static('browser'));
+app.use(routes);
+
 const logger = winston.createLogger({
    level: 'info',
    format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
@@ -15,23 +22,23 @@ const logger = winston.createLogger({
    ]
 });
 
-process.on('exit', code => logger.warn("Shutting down"))
+process.on('exit', code => logger.warn("Shutting down"));
 
-/*
-const httpPort = 3000;
+app.get('/', function (res, req) {
+   res.sendFile('index.html');
+});
 
-const app = express();
-app.use(helmet());
-app.use(routes);
+app.get('/pdf', function (req, res) {
+   data = req.query;
+   console.log(data.url);
+
+   axios.get(data.url)
+      .then(function (response) {
+         let score = new ScoreParser().parse(response.data);
+         new PdfScoreExporter().export(score, fs.createWriteStream('browser/output.pdf'))
+         .then(status => `done: ${status}`, res.sendStatus(200));
+      });
+});
 
 app.listen(httpPort);
 console.log(`Express started on port ${httpPort}`);
-*/
-
-axios.get('https://musescore.com/user/6648736/scores/5663457')
-   .then(function (response) {
-      let score = new ScoreParser().parse(response.data);
-      new PdfScoreExporter().export(score, fs.createWriteStream('/tmp/test.pdf'))
-         .then(status => console.log(`done: ${status}`));
-   })
-
