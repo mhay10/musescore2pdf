@@ -36,7 +36,10 @@ app.get('/pdf', function (req, res) {
       .then(function (response) {
          let score = new ScoreParser().parse(response.data);
          new PdfScoreExporter().export(score, fs.createWriteStream('browser/output.pdf'))
-         .then(status => `done: ${status}`, res.sendStatus(200));
+            .then(status => {
+               console.log(`done: ${status}`);
+               res.sendStatus(200);
+            });
       });
 });
 
